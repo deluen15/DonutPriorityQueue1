@@ -16,7 +16,4 @@ public class OrderModel {
     protected boolean isCanceled;
     protected boolean isComplete;
 
-    public int getPriority() {
-        return 0;
-    }
 }
