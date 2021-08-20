@@ -50,7 +50,8 @@ public class OrderService {
         priorityQueue.add(order);
         Iterator<OrderModel> iterator = priorityQueue.iterator();
         while (iterator.hasNext()){
-            return (List<OrderModel>) iterator.next();
+            List<OrderModel> next = (List<OrderModel>) iterator.next();
+            return next;
         }
         return (List<OrderModel>) repository.findAll();
     }
