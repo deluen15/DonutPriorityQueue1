@@ -6,13 +6,10 @@ import com.demo.donutpriorityqueue.Dto.OrderWithWaitTime;
 import com.demo.donutpriorityqueue.model.Client;
 import com.demo.donutpriorityqueue.model.OrderModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,29 +36,29 @@ public class OrderService {
         orderRepository.add(order);
         this.priorityQueue.add(order);
     }
-
+    public List<OrderModel> getNextDelivery() {
+        AtomicInteger counter = new AtomicInteger(0);
+        return this.priorityQueue.stream()
+                .filter((order) -> counter.addAndGet(order.getQuantity()) <= 50)
+                .collect(Collectors.toList());
+    }
     public void cancelOrder(long id){
         OrderModel om = new OrderModel();
         om.setId(id);
         this.orderRepository.remove(om);
         this.priorityQueue.remove(om);
     }
-
-    public boolean hasOrderInProgress(long clientId) {
-        return this.priorityQueue.stream().anyMatch((order) -> order.getClient().getId() == clientId);
-    }
-
     public List<OrderWithWaitTime> getOrdersWithTheirWaitTime() {
-        AtomicInteger maxDoughnutPerWalkMade = new AtomicInteger();
+        AtomicInteger maxDonutPerWalkMade = new AtomicInteger();
         AtomicInteger temporaryDonut = new AtomicInteger();
         return this.priorityQueue.stream().map((order) -> {
             temporaryDonut.addAndGet(order.getQuantity());
             if (temporaryDonut.get() >= 50) {
                 temporaryDonut.set(0);
-                maxDoughnutPerWalkMade.getAndIncrement();
+                maxDonutPerWalkMade.getAndIncrement();
             }
             OrderWithWaitTime orderWithWaitTime = new OrderWithWaitTime();
-            orderWithWaitTime.setApproximateWaitTime(LocalTime.now().plusMinutes(maxDoughnutPerWalkMade.get() * 5L));
+            orderWithWaitTime.setApproximateWaitTime(LocalTime.now().plusMinutes(maxDonutPerWalkMade.get() * 5L));
             orderWithWaitTime.setOrderModel(order);
             return orderWithWaitTime;
         }).collect(Collectors.toList());
@@ -70,7 +67,7 @@ public class OrderService {
         OrderPositionAndWaitTime orderPositionAndWaitTime = new OrderPositionAndWaitTime();
         orderPositionAndWaitTime.setQueuePosition(1);
 
-        int maxDoughnutPerWalkMade = 0;
+        int maxDonutPerWalkMade = 0;
         int temporaryDonut = 0;
         ArrayList<OrderModel> tmpOrders = new ArrayList<>();
         for (OrderModel nextOrder : priorityQueue) {
@@ -80,20 +77,17 @@ public class OrderService {
             temporaryDonut += nextOrder.getQuantity();
             if (temporaryDonut >= 50) {
                 temporaryDonut = 0;
-                maxDoughnutPerWalkMade++;
+                maxDonutPerWalkMade++;
             }
             orderPositionAndWaitTime.setQueuePosition(orderPositionAndWaitTime.getQueuePosition() + 1);
-            orderPositionAndWaitTime.setTimeTillReady(LocalTime.now().plusMinutes(maxDoughnutPerWalkMade * 5L));
+            orderPositionAndWaitTime.setTimeTillReady(LocalTime.now().plusMinutes(maxDonutPerWalkMade * 5L));
             tmpOrders.add(nextOrder);
         }
         priorityQueue.addAll(tmpOrders);
         return orderPositionAndWaitTime;
     }
 
-    public List<OrderModel> getNextDelivery() {
-        AtomicInteger counter = new AtomicInteger(0);
-        return this.priorityQueue.stream()
-                .filter((order) -> counter.addAndGet(order.getQuantity()) <= 50)
-                .collect(Collectors.toList());
+    public boolean hasOrderInProgress(long clientId) {
+        return this.priorityQueue.stream().anyMatch((order) -> order.getClient().getId() == clientId);
     }
 }
