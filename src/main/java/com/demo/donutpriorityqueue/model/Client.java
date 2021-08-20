@@ -9,5 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Client {
     protected long id;
-    protected boolean isPremium;
+
+
+    public boolean isPremium() {
+        return this.id < 1000;
+    }
+
 }

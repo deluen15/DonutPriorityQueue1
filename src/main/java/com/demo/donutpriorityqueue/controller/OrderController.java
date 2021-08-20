@@ -20,20 +20,20 @@ public class OrderController {
     }
 
     @PostMapping()
-    public ResponseEntity.BodyBuilder addItems(@RequestBody OrderDto orderRequest){
-        if (this.service.hasOrderInProgress(orderRequest.getClientId()))
+    public ResponseEntity.BodyBuilder addItem(@RequestBody OrderDto orderRequest){
+        if (this.service.hasOrderInProgress(orderRequest.getClientId()) || orderRequest.getQuantity() > 50)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST);
         service.addItems(orderRequest);
         return ResponseEntity.status(HttpStatus.CREATED);
     }
-
+/*
     @GetMapping("/{id}")
     public ResponseEntity.BodyBuilder checkPosition(@PathVariable long id){
         if (id == 0){
             return ResponseEntity.badRequest();
         }
         service.checkQueuePosition(id);
-        return ResponseEntity.status(HttpStatus.valueOf("Position is :" + checkPosition(id)));
+        return new ResponseEntity("Position is :", HttpStatus.OK);
     }
 
     @GetMapping
@@ -50,7 +50,7 @@ public class OrderController {
         }
         return (ResponseEntity.BodyBuilder) new ResponseEntity("Bla bla", HttpStatus.CREATED);
     }
-    @PostMapping("/{id}")
+    @PostMapping("/{id}")*/
     public void cancelOrder(@PathVariable long id){
         OrderDto orderDto = new OrderDto();
         if(orderDto.getClientId() == 0){
