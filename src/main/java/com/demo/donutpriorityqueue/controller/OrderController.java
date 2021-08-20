@@ -22,9 +22,9 @@ public class OrderController {
     @PostMapping()
     public ResponseEntity.BodyBuilder addItems(@RequestBody OrderDto orderRequest){
         if (this.service.hasOrderInProgress(orderRequest.getClientId()))
-            return ResponseEntity.badRequest();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST);
         service.addItems(orderRequest);
-        return ResponseEntity.ok();
+        return ResponseEntity.status(HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -44,16 +44,19 @@ public class OrderController {
         return service.findAll();
     }
     @GetMapping
-    public List<OrderModel> getDelivery(OrderDto orderDto){
-
-        return null;
+    public ResponseEntity.BodyBuilder getDelivery(OrderDto orderDto){
+        if (orderDto.getQuantity() != 0) {
+            return service.getDelivery(orderDto);
+        }
+        return (ResponseEntity.BodyBuilder) new ResponseEntity("Bla bla", HttpStatus.CREATED);
     }
     @PostMapping("/{id}")
-    public void cancelOrder(OrderDto orderDto){
+    public void cancelOrder(@PathVariable long id){
+        OrderDto orderDto = new OrderDto();
         if(orderDto.getClientId() == 0){
             ResponseEntity.status(HttpStatus.BAD_REQUEST);
         }
-        service.cancelOrder(orderDto);
-        ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE);
+        service.cancelOrder(id);
+        new ResponseEntity("Order is canceled", HttpStatus.OK );
     }
 }

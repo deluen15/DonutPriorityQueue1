@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -34,7 +33,7 @@ public class OrderService {
         order.setClient(clientRepository.findById(orderDto.getClientId()).get());
         repository.save(order);
     }
-    public Iterable<OrderModel> checkQueuePosition(long id){
+    public long checkQueuePosition(long id){
         Iterator iterator = priorityQueue.iterator();
         int counter = 1;
         while (iterator.hasNext()){
@@ -43,7 +42,7 @@ public class OrderService {
             }
             counter++;
         }
-        return repository.findAll();
+        return repository.count();
     }
     public List<OrderModel> findAll() {
         OrderModel order = new OrderModel();
@@ -56,12 +55,18 @@ public class OrderService {
         return (List<OrderModel>) repository.findAll();
     }
 
-    public List<OrderDto> getDelivery(OrderDto orderDto){
-       OrderModel order = new OrderModel();
-                Arrays.asList(orderDto)
-                        .stream()
-                        .limit(50)
-                        .collect(Collectors.toList());
+    public ResponseEntity.BodyBuilder getDelivery(OrderDto orderDto){
+       if (this.hasOrderInProgress(orderDto.getClientId())){
+           if(orderDto.getQuantity() < 50){
+               return null;
+           }
+           else if (orderDto.getQuantity() > 50) {
+               return null;
+           }
+       }else
+            new ResponseEntity("Delivery Information", HttpStatus.CREATED);
+
+       return null;
             //if order != 0
 //            //if orders < 50 return orders;
 //             //if > 50 than 50
@@ -69,13 +74,10 @@ public class OrderService {
 //        //else
 //        //return message
 //        //Marrim quene dhe i bejme dequeue 50 orders
-           return null;
     }
 
-    public void cancelOrder(OrderDto orderDto){
-        OrderModel order = new OrderModel();
-        order.setClient(clientRepository.findById(orderDto.getClientId()).get());
-        repository.delete(order);
+    public void cancelOrder(long id){
+        repository.delete(id);
     }
 
     public boolean hasOrderInProgress(long clientId) {

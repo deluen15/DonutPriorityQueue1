@@ -22,7 +22,7 @@ public class OrderDto implements Comparable<OrderModel>, Serializable
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         OrderModel order = (OrderModel) obj;
-        return Long.compare(order.getId(), clientId) == 0 &&
+        return order.getId() == clientId &&
                 Objects.equals(clientId, order.getId());
     }
     @Override
